@@ -2,6 +2,7 @@ from django.contrib import admin
 from .models import Room, ClassSchedule
 # Register your models here.
 
+
 @admin.register(Room)
 class Roomadmin(admin.ModelAdmin):
     list_display = ("name", "building")
@@ -9,10 +10,19 @@ class Roomadmin(admin.ModelAdmin):
     list_filter = ("building",)
     ordering = ("building", "name")
 
+
 @admin.register(ClassSchedule)
 class ClassScheduleAdmin(admin.ModelAdmin):
-    list_display = ("course", "subject", "day", "start_time", "end_time", "room", "lecturer", "is_cancelled")
-    list_filter = ("day", "room__building","is_cancelled")
+    list_display = (
+        "course",
+        "subject",
+        "day",
+        "start_time",
+        "end_time",
+        "room",
+        "lecturer",
+        "is_cancelled")
+    list_filter = ("day", "room__building", "is_cancelled")
     search_fields = ("course", "subject", "lecturer")
     list_editable = ("is_cancelled", "room")
     ordering = ("day", "start_time")
