@@ -27,3 +27,8 @@ jobs:
       run: |
         pip install flake8
         flake8 . --max-line-length=120 --exclude=venv,migrations
+    - name:  Run Tests
+      run: |
+        python manage.py test
+      env:
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
