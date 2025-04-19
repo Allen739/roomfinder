@@ -1,0 +1,79 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Excel Files</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'finder/css/style.css' %}">
+    <script src="{% static 'finder/js/script.js' %}"></script>
+</head>
+<body>
+    <div class="header">
+        <div class="header-logo position">
+            <div class="logo-icon">
+                <i class="fas fa-door-open"></i>
+            </div>
+            <h1 class="header-title">Campuspal</h1>
+        </div> <br><br>
+        
+    </div>
+    <div>
+        <i class="fas fa-file-excel"></i>
+        <h2>Upload Excel Files to start</h2>
+    </div>
+    <br>
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                {% if message.tags == 'success' %}
+                <div class="success">
+                    <i class="fas fa-check-circle message-icon"></i>
+                    <span>{{ message }}</span>
+                </div>
+                {% else %}
+                <div class="error">
+                    <i class="fas fa-exclamation-circle message-icon"></i>
+                    <span>{{ message }}</span>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="card">
+        <form method="post" enctype="multipart/form-data" id="upload-form">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% if field.errors %}
+                <div class="errorlist">{{ field.errors }}</div>
+                {% endif %}
+                <div class="file-input-container">
+                    <label class="file-input-label">
+                        <i class="fas fa-upload"></i>
+                        <span>Choose file</span>
+                        {{ field }}
+                        {{ field }}
+                    </label>
+                    <div class="file-name" id="file-name-display">No file selected</div>
+                </div>
+            </div>
+            {% endfor %}
+            <button type="submit" id="submit-button">
+                <i class="fas fa-cloud-upload-alt"></i>
+                Upload Files
+            </button>
+        </form>
+    </div>
+
+    <a href="{% url 'finder:search_rooms' %}" class="forward-link">
+        <i class="fas fa-arrow-right"></i>
+        Search rooms
+
+
+</body>
+</html>

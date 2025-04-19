@@ -1,0 +1,45 @@
+# Virtual environments
+venv/
+env/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Django stuff
+*.log
+*.pot
+*.pyc
+*/migrations/*.py
+*/migrations/__pycache__/
+
+# PostgreSQL dumps (common formats)
+*.sql
+*.pgsql
+*.postgresql
+
+# Local environment configs
+.env
+.env.*
+
+# macOS system files
+.DS_Store
+
+# IDE/project settings
+.vscode/
+.idea/
+
+# Coverage/testing stuff
+htmlcov/
+.coverage
+.tox/
+.pytest_cache/
+
+# Node modules (if using React frontend)
+node_modules/
+build/
+dist/
+
+
+
+
