@@ -28,6 +28,12 @@ To be addressed in Version 2 or future PRs. Currently ignored in CI (`.github/wo
   - **Fix**: Move operator to previous line.
   - **Fix**: Reduce to 1–2 blank lines.
 
+**CI Test Database**:
+  - Issue: `DATABASE_URL` not set in CI, using SQLite fallback.
+  - Fix: Configure PostgreSQL in CI (e.g., GitHub Actions `services: postgres`) for realistic tests.
+  - Ref: GitHub issue #TBD
+
+
 ### Plan
 - Created GitHub issue to track (see #1).
 - Fix in Version 2 or dedicated PR (e.g., "Code cleanup: Resolve flake8 errors").
