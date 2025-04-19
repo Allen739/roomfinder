@@ -23,6 +23,9 @@ To be addressed in Version 2 or future PRs. Currently ignored in CI (`.github/wo
 - **E303: Too many blank lines**:
   - `room_finder/roomfinder/settings.py:84` (3 blank lines)
   - `room_finder/roomfinder/settings.py:104` (3 blank lines)
+  - **W504: Line break after binary operator**:
+  - `finder/views.py:54`
+  - **Fix**: Move operator to previous line.
   - **Fix**: Reduce to 1–2 blank lines.
 
 ### Plan
