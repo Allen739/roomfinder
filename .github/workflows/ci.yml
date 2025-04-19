@@ -12,22 +12,23 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.13'
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-    - name: Run tests
-      run: |
-        python manage.py test
+
     - name: Lint with flake8
       run: |
         pip install flake8
         flake8 . --max-line-length=120 --exclude=venv,migrations
-    - name:  Run Tests
+
+    - name: Run Tests
       run: |
         python manage.py test
       env:
