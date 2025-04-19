@@ -26,6 +26,6 @@ To be addressed in Version 2 or future PRs. Currently ignored in CI (`.github/wo
   - **Fix**: Reduce to 1–2 blank lines.
 
 ### Plan
-- Created GitHub issue to track (see #TBD).
+- Created GitHub issue to track (see #1).
 - Fix in Version 2 or dedicated PR (e.g., "Code cleanup: Resolve flake8 errors").
 - Update CI to remove `--ignore` after fixes.
