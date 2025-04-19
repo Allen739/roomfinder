@@ -1,5 +1,6 @@
 
 # 🏫 Room Finder
+[![CI](https://github.com/Allen739/roomfinder/actions/workflows/ci.yml/badge.svg)](https://github.com/Allen739/roomfinder/actions/workflows/ci.yml)
 
 **Room Finder** is a plug-and-play Django app that helps students and lecturers instantly find free classrooms across campus. Upload your timetables and room lists, and instantly get free classrooms across campus✌️.
 
