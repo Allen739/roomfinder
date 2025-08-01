@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "finder.apps.FinderConfig" # Add new app here 
+    "finder.apps.FinderConfig"  # Add new app here
 ]
 
 MIDDLEWARE = [
@@ -79,8 +79,6 @@ DATABASES = {
     'default': dj_database_url.config(default=config('DATABASE_URL'))
 }
 
-
-
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
@@ -104,12 +102,12 @@ AUTH_PASSWORD_VALIDATORS = [
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'handlers': {
+    "handlers": {
         'console': {
             'class': 'logging.StreamHandler',
         },
     },
-    'loggers': {
+    "loggers": {
         'finder.views': {
             'handlers': ['console'],
             'level': 'DEBUG',

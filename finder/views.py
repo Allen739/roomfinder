@@ -40,20 +40,15 @@ def search_rooms(request):
             end_time = end_datetime.time()
 
             # Double-check time range (fallback)
-            if end_time > datetime.time(
-                    23,
-                    0) or start_time < datetime.time(
-                    7,
-                    0):
+            if end_time > datetime.time(23, 0) or start_time < datetime.time(7, 0):
                 errors.append(
-                    "The selected time and duration are outside allowed hours (7:00 AM–11:00 PM).")
+                    "The selected time and duration are outside allowed "
+                    "hours (7:00 AM–11:00 PM).")
                 logger.warning(
                     f"Invalid time range: start={start_time}, end={end_time}")
             else:
-                buffer_end_time = (
-                    end_datetime +
-                    datetime.timedelta(
-                        minutes=10)).time()
+                buffer_end_time = (end_datetime +
+                                   datetime.timedelta(minutes=10)).time()
 
                 # Get rooms based on building
             if building == "ALL":
@@ -78,9 +73,11 @@ def search_rooms(request):
                 free_rooms = all_rooms.exclude(id__in=booked_rooms)
 
                 if not free_rooms:
-                    building_label = "any building" if not building else f"Building {building}"
+                    building_label = ("any building" if not building 
+                                      else f"Building {building}")
                     errors.append(
-                        f"No rooms available in {building_label} on {day} at {time} for {duration} minutes.")
+                        f"No rooms available in {building_label} on {day} "
+                        f"at {time} for {duration} minutes.")
 
         else:
             # Log form errors and add to errors list
@@ -169,34 +166,45 @@ def upload_excel(request):
                             # Log row data for debugging
 
                             match = re.match(
-                                r"(?P<day>\w+)\s+(?P<start>\d{1,2}:\d{2}\s*(?:AM|PM)?)[-–](?P<end>\d{1,2}:\d{2}\s*(?:AM|PM)?)",
+                                r"(?P<day>\w+)\s+(?P<start>\d{1,2}:\d{2}\s*"
+                                r"(?:AM|PM)?)[-–](?P<end>\d{1,2}:\d{2}\s*"
+                                r"(?:AM|PM)?)",
                                 day_time)
                             if not match:
                                 messages.warning(
-                                    request, f"Row {index}: Skipped due to invalid Day/Time: {day_time}")
+                                    request, 
+                                    f"Row {index}: Skipped due to invalid "
+                                    f"Day/Time: {day_time}")
                                 continue
                             day, start_time_str, end_time_str = match.groups()
                             day = day_map.get(day, None)
                             if day not in valid_days:
                                 messages.warning(
-                                    request, f"Row {index}: Skipped due to invalid day: {day}")
+                                    request, 
+                                    f"Row {index}: Skipped due to invalid "
+                                    f"day: {day}")
                                 continue
                             try:
-                                start_time = timezone.datetime.strptime(
-                                    start_time_str,
-                                    "%I:%M %p").time() if "AM" in start_time_str or "PM" in start_time_str else timezone.datetime.strptime(
-                                    start_time_str,
-                                    "%H:%M").time()
-                                end_time = timezone.datetime.strptime(
-                                    end_time_str,
-                                    "%I:%M %p").time() if "AM" in end_time_str or "PM" in end_time_str else timezone.datetime.strptime(
-                                    end_time_str,
-                                    "%H:%M").time()
+                                if ("AM" in start_time_str or 
+                                    "PM" in start_time_str):
+                                    start_time = timezone.datetime.strptime(
+                                        start_time_str, "%I:%M %p").time()
+                                else:
+                                    start_time = timezone.datetime.strptime(
+                                        start_time_str, "%H:%M").time()
+                                
+                                if ("AM" in end_time_str or 
+                                    "PM" in end_time_str):
+                                    end_time = timezone.datetime.strptime(
+                                        end_time_str, "%I:%M %p").time()
+                                else:
+                                    end_time = timezone.datetime.strptime(
+                                        end_time_str, "%H:%M").time()
                             except ValueError as e:
                                 messages.warning(
                                     request,
-                                    f"Row {index}: Skipped due to invalid time format: {day_time} ({
-                                        str(e)})")
+                                    f"Row {index}: Skipped due to invalid "
+                                    f"time format: {day_time} ({str(e)})")
                                 continue
                             room_name = str(row["Room"]).strip()
                             building = str(row["Building"]).strip()
@@ -213,7 +221,10 @@ def upload_excel(request):
                             if not course or not subject or not lecturer:
                                 messages.warning(
                                     request,
-                                    f"Row {index}: Skipped: Missing course/subject/lecturer: Course={course}, Subject={subject}, Lecturer={lecturer}")
+                                    f"Row {index}: Skipped: Missing "
+                                    f"course/subject/lecturer: "
+                                    f"Course={course}, Subject={subject}, "
+                                    f"Lecturer={lecturer}")
                                 continue
                             ClassSchedule.objects.create(
                                 course=course,
@@ -232,8 +243,7 @@ def upload_excel(request):
                 except Exception as e:
                     messages.error(
                         request,
-                        f"Error processing timetable file: {
-                            str(e)}")
+                        f"Error processing timetable file: {str(e)}")
 
     else:
         form = ExcelUploadForm()

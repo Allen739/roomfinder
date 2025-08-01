@@ -46,19 +46,16 @@ class ClassSchedule(models.Model):
 
     class Meta:
         verbose_name = "Class Schedule"
-        verbose_name_plural = "Class SChedules"
+        verbose_name_plural = "Class Schedules"
         indexes = [
             models.Index(fields=["day", "start_time", "end_time"]),
             models.Index(fields=["room", "is_cancelled"]),
         ]
 
     def __str__(self):
-        return f"{
-            self.course}  {
-            self.day} ({
-            self.start_time} - {
-                self.end_time}) in {
-                    self.room}"
+        return (f"{self.course} {self.day} "
+                f"({self.start_time} - {self.end_time}) "
+                f"in {self.room}")
 
     def get_absolute_url(self):
         return f"/schedules/{self.id}"
