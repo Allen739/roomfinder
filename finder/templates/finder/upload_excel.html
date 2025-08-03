@@ -5,10 +5,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Excel Files - Room Finder</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>Upload Data - Campuspal</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'finder/css/styles.css' %}">
-    <script src="{% static 'finder/js/scripts.js' %}"></script>
 </head>
 <body>
     <div class="app-container">
@@ -19,30 +18,29 @@
                 </div>
                 <h1 class="header-title">Campuspal</h1>
             </div>
+            <nav class="header-nav">
+                <a href="{% url 'finder:search_rooms' %}" class="nav-link header-nav-link">
+                    <i class="fas fa-search"></i>
+                    <span>Find a Room</span>
+                </a>
+            </nav>
         </header>
-        
-        <main class="content">
+
+        <main class="content" style="grid-template-columns: 1fr;">
             <div class="upload-container">
                 <section class="module">
                     <div class="module-header">
                         <i class="fas fa-file-excel module-icon"></i>
-                        <h2 class="module-title">Upload Excel Files</h2>
+                        <h2 class="module-title">Upload Timetable Data</h2>
                     </div>
                     <div class="module-content">
                         {% if messages %}
                             <div class="messages">
                                 {% for message in messages %}
-                                    {% if message.tags == 'success' %}
-                                    <div class="success-message">
-                                        <i class="fas fa-check-circle message-icon"></i>
+                                    <div class="{% if message.tags == 'success' %}success-message{% else %}error-message{% endif %}">
+                                        <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-circle{% endif %} message-icon"></i>
                                         <span>{{ message }}</span>
                                     </div>
-                                    {% else %}
-                                    <div class="error-message">
-                                        <i class="fas fa-exclamation-circle message-icon"></i>
-                                        <span>{{ message }}</span>
-                                    </div>
-                                    {% endif %}
                                 {% endfor %}
                             </div>
                         {% endif %}
@@ -52,44 +50,39 @@
                             {% for field in form %}
                             <div class="form-group">
                                 <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                                {% if field.errors %}
-                                <div class="error">{{ field.errors }}</div>
-                                {% endif %}
                                 <div class="file-input-container">
                                     <label class="file-input-label" for="{{ field.id_for_label }}">
                                         <i class="fas fa-upload"></i>
-                                        <span>Choose file</span>
+                                        <span>Choose file...</span>
                                         {{ field }}
                                     </label>
-                                    <div class="file-name" id="file-name-display-{{ field.id_for_label }}">No file selected</div>
+                                    <div class="file-name" id="file-name-display-{{ field.id_for_label }}">No file selected.</div>
                                 </div>
+                                {% if field.errors %}
+                                <div class="error">{{ field.errors|join:", " }}</div>
+                                {% endif %}
                             </div>
                             {% endfor %}
                             <div class="upload-actions">
-                                <button type="submit" id="submit-button" class="upload-btn">
+                                <button type="submit" id="submit-button" class="search-btn">
                                     <i class="fas fa-cloud-upload-alt"></i>
-                                    Upload Files
+                                    <span>Upload Files</span>
                                 </button>
                             </div>
                         </form>
-                        
-                        <div class="navigation-links">
-                            <a href="{% url 'finder:search_rooms' %}" class="nav-link">
-                                <i class="fas fa-search"></i>
-                                Search Rooms
-                            </a>
-                        </div>
                     </div>
                 </section>
             </div>
         </main>
-        
+
         <footer class="footer">
-            &copy; 2025 Campuspal. All rights reserved.
+            <div class="footer-content">
+                <span>&copy; {% now "Y" %} Campuspal. All rights reserved.</span>
+            </div>
         </footer>
     </div>
 
-    <!-- Toast Notification (Hidden by default) -->
-    <div class="toast" id="toast">📤 Upload in progress...</div>
+    <div class="toast" id="toast"></div>
+    <script src="{% static 'finder/js/scripts.js' %}"></script>
 </body>
 </html>

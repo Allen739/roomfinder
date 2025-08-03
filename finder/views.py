@@ -90,6 +90,12 @@ def search_rooms(request):
                     errors.extend(
                         [f"{field.capitalize()}: {error}" for error in error_list])
 
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return render(request, "finder/search.html#results-container", {
+            "free_rooms": free_rooms,
+            "errors": errors,
+        })
+    
     return render(request, "finder/search.html", {
         "form": form,
         "free_rooms": free_rooms,

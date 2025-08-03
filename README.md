@@ -66,7 +66,8 @@
    Create a `.env` file in the project root:
 
    ```env
-   SECRET_KEY=your-django-secret-key
+   SECRET_KEY=your-django-secret-key  just use this command: python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+
    DEBUG=True
    DATABASE_URL=sqlite:///db.sqlite3  # or PostgreSQL URL for prod
    ALLOWED_HOSTS=localhost,127.0.0.1

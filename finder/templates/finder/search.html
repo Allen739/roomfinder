@@ -5,10 +5,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Room Finder - Find Available Rooms</title>
+    <title>Campuspal - Find Available Rooms</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'finder/css/styles.css' %}">
-    <script src="{% static 'finder/js/scripts.js' %}"></script>
 </head>
 <body>
     <div class="app-container">
@@ -29,14 +28,13 @@
         
         <main class="content">
             <div class="left-column">
-                <!-- Search Module -->
                 <section class="module">
                     <div class="module-header">
                         <i class="fas fa-search module-icon"></i>
-                        <h2 class="module-title">Find Available Rooms</h2>
+                        <h2 class="module-title">Find a Room</h2>
                     </div>
                     <div class="module-content">
-                        <form method="post" class="search-form">
+                        <form method="post" class="search-form" id="search-form">
                             {% csrf_token %}
                             
                             {% for field in form %}
@@ -44,7 +42,7 @@
                                 <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                                 {{ field }}
                                 {% if field.errors %}
-                                <div class="error">{{ field.errors }}</div>
+                                <div class="error">{{ field.errors|join:", " }}</div>
                                 {% endif %}
                             </div>
                             {% endfor %}
@@ -52,119 +50,79 @@
                             <div class="search-actions">
                                 <button type="submit" class="search-btn" id="searchBtn">
                                     <i class="fas fa-search search-btn-icon"></i>
-                                    Find Rooms
+                                    <span>Find Rooms</span>
                                 </button>
                             </div>
                         </form>
-                        
-                        <div class="search-tips">
-                            <h3><i class="fas fa-lightbulb"></i> Search Tips</h3>
-                            <ul>
-                                <li>Select "All Buildings" to search across the entire campus</li>
-                                <li>Choose your preferred time slot and duration</li>
-                                <li>Results include a 10-minute buffer for room transitions</li>
-                            </ul>
-                        </div>
                     </div>
                 </section>
-                
-                <!-- Error Module (Only shown if errors exist) -->
-                {% if errors %}
-                <section class="module error-module">
-                    <div class="module-header">
-                        <i class="fas fa-exclamation-circle module-icon"></i>
-                        <h2 class="module-title">Attention Required</h2>
-                    </div>
-                    <div class="module-content">
-                        {% for error in errors %}
-                            <div class="error">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                </section>
-                {% endif %}
             </div>
             
             <div class="right-column">
-                <!-- Results Module (Only shown if results exist) -->
-                {% if free_rooms %}
-                <section class="module results-module">
-                    <div class="module-header results-header">
-                        <div class="header-left">
-                            <i class="fas fa-check-circle results-icon"></i>
-                            <h2 class="module-title">Available Rooms</h2>
+                <div id="results-container">
+                    {% if free_rooms %}
+                    <section class="module results-module">
+                        <div class="module-header results-header">
+                            <div class="header-left">
+                                <i class="fas fa-check-circle results-icon"></i>
+                                <h2 class="module-title">Available Rooms</h2>
+                            </div>
+                            <div class="results-count">{{ free_rooms|length }} found</div>
                         </div>
-                        <div class="results-count">{{ free_rooms|length }} found</div>
-                    </div>
-                    <div class="module-content">
-                        <ul class="room-list">
-                            {% for room in free_rooms %}
+                        <div class="module-content">
+                            <ul class="room-list">
+                                {% for room in free_rooms %}
                                 <li class="room-item">
-                                    <div class="room-left">
-                                        <div class="room-icon-wrapper">
-                                            <i class="fas fa-door-open room-icon"></i>
-                                        </div>
-                                        <div class="room-details">
-                                            <span class="room-name">{{ room.name }}</span>
-                                            <span class="room-building">{{ room.building }}</span>
-                                        </div>
+                                    <div class="room-icon-wrapper">
+                                        <i class="fas fa-door-open room-icon"></i>
                                     </div>
-                                    <div class="room-right">
-                                        <div class="room-tags">
-                                            <span class="room-tag tag-available">Available</span>
-                                        </div>
-                                        <button class="room-action-btn" type="button">
-                                            <i class="fas fa-info-circle"></i>
-                                        </button>
+                                    <div class="room-details">
+                                        <span class="room-name">{{ room.name }}</span>
+                                        <span class="room-building">{{ room.building }}</span>
+                                    </div>
+                                    <div class="room-tags">
+                                        <span class="room-tag tag-available">Available</span>
                                     </div>
                                 </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </section>
+                    {% elif errors %}
+                    <section class="module error-module">
+                        <div class="module-header">
+                            <i class="fas fa-exclamation-circle module-icon"></i>
+                            <h2 class="module-title">Search Error</h2>
+                        </div>
+                        <div class="module-content">
+                            {% for error in errors %}
+                            <div class="error">{{ error }}</div>
                             {% endfor %}
-                        </ul>
-                    </div>
-                </section>
-                {% elif errors|length == 0 %}
-                <!-- Empty State Module -->
-                <section class="module">
-                    <div class="empty-state">
-                        <div class="empty-icon">
-                            <i class="fas fa-search"></i>
                         </div>
-                        <h3 class="empty-title">Find Your Perfect Room</h3>
-                        <p class="empty-text">Enter your search criteria to discover available rooms across campus</p>
-                        <div class="empty-features">
-                            <div class="feature-item">
-                                <i class="fas fa-clock"></i>
-                                <span>Real-time availability</span>
+                    </section>
+                    {% else %}
+                    <section class="module">
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="fas fa-search"></i>
                             </div>
-                            <div class="feature-item">
-                                <i class="fas fa-building"></i>
-                                <span>All campus buildings</span>
-                            </div>
-                            <div class="feature-item">
-                                <i class="fas fa-calendar-check"></i>
-                                <span>Smart scheduling</span>
-                            </div>
+                            <h3 class="empty-title">Find Your Perfect Study Spot</h3>
+                            <p class="empty-text">Use the form to search for available rooms.</p>
                         </div>
-                    </div>
-                </section>
-                {% endif %}
+                    </section>
+                    {% endif %}
+                </div>
             </div>
         </main>
         
         <footer class="footer">
             <div class="footer-content">
-                <span>&copy; 2025 Campuspal. All rights reserved.</span>
-                <div class="footer-links">
-                    <a href="{% url 'finder:upload_excel' %}" class="footer-link">
-                        <i class="fas fa-upload"></i> Upload Data
-                    </a>
-                </div>
+                <span>&copy; {% now "Y" %} Campuspal. All rights reserved.</span>
             </div>
         </footer>
     </div>
     
-    <!-- Toast Notification (Hidden by default) -->
-    <div class="toast" id="toast">🔍 Search complete! Displaying available rooms</div>
+    <div class="toast" id="toast"></div>
+    <script src="{% static 'finder/js/scripts.js' %}"></script>
 </body>
 </html>
-                            
-                           
