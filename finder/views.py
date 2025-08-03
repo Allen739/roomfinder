@@ -2,8 +2,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .models import Room, ClassSchedule
-from .forms import RoomSearchForm
-from .forms import ExcelUploadForm
+from .forms import RoomSearchForm, ExcelUploadForm
 from io import BytesIO
 import pandas as pd
 import re
@@ -14,96 +13,88 @@ import logging
 # Set up logging for debugging
 logger = logging.getLogger(__name__)
 
-
 def search_rooms(request):
-    form = RoomSearchForm()
-    free_rooms = []
+    form = RoomSearchForm(request.POST or None)
+    available_rooms = []
+    unavailable_rooms = []
     errors = []
+    search_time = None
+    duration = None
 
-    if request.method == "POST":
-        form = RoomSearchForm(request.POST)
-        if form.is_valid():
-            building = form.cleaned_data["building"]
-            day = form.cleaned_data["day"]
-            time = form.cleaned_data["time"]
-            duration = int(form.cleaned_data["duration"])
+    if request.method == "POST" and form.is_valid():
+        building = form.cleaned_data["building"]
+        day = form.cleaned_data["day"]
+        search_time = form.cleaned_data.get("time")
+        duration = form.cleaned_data.get("duration")
 
-            # Log the input for debugging
-            logger.debug(
-                f"Search: building={building}, day={day}, time={time}, duration={duration}")
+        room_queryset = Room.objects.all() if building == "ALL" else Room.objects.filter(building=building)
+        rooms = room_queryset.prefetch_related('schedules')
 
-            # Calculate time range with 10-minute buffer
-            start_datetime = timezone.datetime.combine(timezone.now(), time)
-            end_datetime = start_datetime + \
-                datetime.timedelta(minutes=duration)
-            start_time = start_datetime.time()
-            end_time = end_datetime.time()
-
-            # Double-check time range (fallback)
-            if end_time > datetime.time(23, 0) or start_time < datetime.time(7, 0):
-                errors.append(
-                    "The selected time and duration are outside allowed "
-                    "hours (7:00 AM–11:00 PM).")
-                logger.warning(
-                    f"Invalid time range: start={start_time}, end={end_time}")
-            else:
-                buffer_end_time = (end_datetime +
-                                   datetime.timedelta(minutes=10)).time()
-
-                # Get rooms based on building
-            if building == "ALL":
-                all_rooms = Room.objects.all()
-            else:
-                all_rooms = Room.objects.filter(building__iexact=building)
-
-            if not all_rooms.exists():
-                errors.append("No rooms found for the selected building.")
-            else:
-
-                # Find booked rooms (not canceled) during the time range +
-                # buffer
-                booked_rooms = Room.objects.filter(
-                    schedules__day=day,
-                    schedules__start_time__lte=buffer_end_time,
-                    schedules__end_time__gt=start_time,
-                    schedules__is_cancelled=False
-                ).distinct()
-
-                # Free rooms = all rooms - booked rooms
-                free_rooms = all_rooms.exclude(id__in=booked_rooms)
-
-                if not free_rooms:
-                    building_label = ("any building" if not building 
-                                      else f"Building {building}")
-                    errors.append(
-                        f"No rooms available in {building_label} on {day} "
-                        f"at {time} for {duration} minutes.")
-
+        if not rooms.exists():
+            errors.append(f"No rooms found for the selected criteria.")
         else:
-            # Log form errors and add to errors list
-            logger.error(f"Form validation failed: {form.errors}")
-            for field, error_list in form.errors.items():
-                if field == "__all__":
-                    # Non-field errors (e.g., from clean())
-                    errors.extend(error_list)
-                else:
-                    errors.extend(
-                        [f"{field.capitalize()}: {error}" for error in error_list])
+            # First, build the full timeline data for every room
+            all_rooms_with_timelines = []
+            for room in rooms:
+                schedules = room.schedules.filter(day=day, is_cancelled=False).order_by('start_time')
+                timeline = []
+                last_end_time = datetime.time(7, 0)
+
+                for schedule in schedules:
+                    if schedule.start_time > last_end_time:
+                        timeline.append({"type": "free", "start": last_end_time, "end": schedule.start_time})
+                    timeline.append({"type": "booked", "start": schedule.start_time, "end": schedule.end_time, "course": schedule.course})
+                    last_end_time = schedule.end_time
+                
+                if last_end_time < datetime.time(23, 0):
+                    timeline.append({"type": "free", "start": last_end_time, "end": datetime.time(23, 0)})
+                
+                all_rooms_with_timelines.append({"room": room, "timeline": timeline})
+
+            # If a specific time is searched, sort rooms into available/unavailable lists
+            if search_time and duration:
+                search_start_time = search_time
+                search_end_time = (datetime.datetime.combine(datetime.date.today(), search_start_time) + datetime.timedelta(minutes=duration)).time()
+
+                for room_data in all_rooms_with_timelines:
+                    is_available = False
+                    for block in room_data["timeline"]:
+                        if block["type"] == "free":
+                            # Check if the search window fits entirely within this free block
+                            if block["start"] <= search_start_time and block["end"] >= search_end_time:
+                                is_available = True
+                                break
+                    if is_available:
+                        available_rooms.append(room_data)
+                    else:
+                        unavailable_rooms.append(room_data)
+            else:
+                # If no specific time, all rooms are in the "unavailable" list for display purposes
+                unavailable_rooms = all_rooms_with_timelines
+
+    # Convert datetime objects to strings for template rendering
+    for room_list in [available_rooms, unavailable_rooms]:
+        for room_data in room_list:
+            for block in room_data["timeline"]:
+                block['start_str'] = block['start'].strftime("%H:%M")
+                block['end_str'] = block['end'].strftime("%H:%M")
+                total_duration = (datetime.datetime.combine(datetime.date.min, datetime.time(23,0)) - datetime.datetime.combine(datetime.date.min, datetime.time(7,0))).total_seconds()
+                block['start_percentage'] = ((datetime.datetime.combine(datetime.date.min, block['start']) - datetime.datetime.combine(datetime.date.min, datetime.time(7,0))).total_seconds() / total_duration) * 100
+                block['width_percentage'] = ((datetime.datetime.combine(datetime.date.min, block['end']) - datetime.datetime.combine(datetime.date.min, block['start'])).total_seconds() / total_duration) * 100
+
+    context = {
+        "form": form,
+        "available_rooms": available_rooms,
+        "unavailable_rooms": unavailable_rooms,
+        "errors": errors,
+        "search_performed": search_time and duration
+    }
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        return render(request, "finder/search.html#results-container", {
-            "free_rooms": free_rooms,
-            "errors": errors,
-        })
-    
-    return render(request, "finder/search.html", {
-        "form": form,
-        "free_rooms": free_rooms,
-        "errors": errors,
-    })
+        return render(request, "finder/timeline_partial.html", context)
 
+    return render(request, "finder/search.html", context)
 
-# ... (other imports and code unchanged)
 @staff_member_required
 def upload_excel(request):
     if request.method == "POST":
@@ -255,3 +246,6 @@ def upload_excel(request):
         form = ExcelUploadForm()
 
     return render(request, "finder/upload_excel.html", {"form": form})
+
+def home(request):
+    return redirect("finder:search_rooms")

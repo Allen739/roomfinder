@@ -13,16 +13,9 @@ class RoomSearchForm(forms.Form):
         ("Fri", "Friday"),
     ]
 
-    DURATIONS = [
-        (30, "30 minutes"),
-        (60, "1 hour"),
-        (90, "1 hour 30 minutes"),
-        (120, "2 hours"),
-    ]
-
     building = forms.ChoiceField(
         label="Building",
-        help_text="Select a specific building or search all buildings",
+        required=True,
         widget=forms.Select(attrs={
             'class': 'form-control',
             'id': 'id_building'
@@ -31,83 +24,41 @@ class RoomSearchForm(forms.Form):
     day = forms.ChoiceField(
         choices=DAYS, 
         label="Day",
-        help_text="Select the day of the week",
         widget=forms.Select(attrs={
             'class': 'form-control',
             'id': 'id_day'
         })
     )
     time = forms.TimeField(
-        label="Start Time",
-        help_text="Enter your preferred start time (7:00 AM - 11:00 PM)",
+        label="Start Time (Optional)",
+        required=False,
         widget=forms.TimeInput(attrs={
             "type": "time",
             'class': 'form-control',
-            'min': '07:00',
-            'max': '23:00',
             'id': 'id_time'
         })
     )
-    duration = forms.ChoiceField(
-        choices=DURATIONS, 
-        label="Duration",
-        help_text="How long do you need the room?",
-        widget=forms.Select(attrs={
+    duration = forms.IntegerField(
+        label="Duration (minutes, optional)",
+        required=False,
+        min_value=15,
+        max_value=480, # 8 hours
+        help_text="Enter duration in minutes (e.g., 60 for 1 hour). Min 15, Max 480.",
+        widget=forms.NumberInput(attrs={
             'class': 'form-control',
-            'id': 'id_duration'
+            'id': 'id_duration',
+            'placeholder': 'e.g., 60',
+            'step': '15'
         })
     )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Get unique buildings from Room model
         buildings = Room.objects.values('building').distinct().order_by('building')
-        # Create choices: [("ALL", "All Buildings"), ("Science Block", "Science Block"), ...]
         building_choices = [("ALL", "All Buildings")] + [
             (b["building"], b["building"]) for b in buildings
         ]
-        # Handle case with no buildings
-        if len(building_choices) == 1:  # Only "ALL"
-            building_choices = [("ALL", "No buildings available")]
         self.fields["building"].choices = building_choices
-
-    def clean_time(self):
-        time = self.cleaned_data.get('time')
-        if time:
-            if time < datetime.time(7, 0):
-                raise ValidationError("Start time cannot be before 7:00 AM.")
-            if time > datetime.time(23, 0):
-                raise ValidationError("Start time cannot be after 11:00 PM.")
-        return time
-
-    def clean(self):
-        cleaned_data = super().clean()
-        time = cleaned_data.get("time")
-        duration = cleaned_data.get("duration")
-
-        if time and duration:
-            try:
-                # Convert duration to integer
-                duration = int(duration)
-                # Calculate end time
-                start_datetime = datetime.datetime.combine(
-                    datetime.date.today(), time)
-                end_datetime = start_datetime + \
-                    datetime.timedelta(minutes=duration)
-                end_time = end_datetime.time()
-
-                # Check if end_time is too late (after 23:00)
-                if end_time > datetime.time(23, 0):
-                    raise ValidationError(
-                        "The selected time and duration extend beyond 11:00 PM. "
-                        "Please choose an earlier time or shorter duration.")
-                        
-                # Store calculated end time for use in view
-                cleaned_data['calculated_end_time'] = end_time
-                
-            except (ValueError, TypeError):
-                raise ValidationError("Invalid time or duration format.")
-        return cleaned_data
 
 
 class ExcelUploadForm(forms.Form):

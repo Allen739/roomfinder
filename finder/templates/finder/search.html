@@ -5,7 +5,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Campuspal - Find Available Rooms</title>
+    <title>Campuspal - Room Finder</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'finder/css/styles.css' %}">
 </head>
@@ -13,116 +14,74 @@
     <div class="app-container">
         <header class="header">
             <div class="header-logo">
-                <div class="logo-icon">
-                    <i class="fas fa-door-open"></i>
-                </div>
+                <i class="fas fa-door-open logo-icon"></i>
                 <h1 class="header-title">Campuspal</h1>
             </div>
             <nav class="header-nav">
-                <a href="{% url 'finder:upload_excel' %}" class="nav-link header-nav-link">
+                <a href="{% url 'finder:upload_excel' %}" class="nav-link">
                     <i class="fas fa-upload"></i>
                     <span>Upload Data</span>
                 </a>
             </nav>
         </header>
-        
-        <main class="content">
-            <div class="left-column">
-                <section class="module">
-                    <div class="module-header">
-                        <i class="fas fa-search module-icon"></i>
-                        <h2 class="module-title">Find a Room</h2>
-                    </div>
-                    <div class="module-content">
-                        <form method="post" class="search-form" id="search-form">
-                            {% csrf_token %}
-                            
-                            {% for field in form %}
-                            <div class="form-group">
-                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                                {{ field }}
-                                {% if field.errors %}
-                                <div class="error">{{ field.errors|join:", " }}</div>
-                                {% endif %}
-                            </div>
-                            {% endfor %}
-                            
-                            <div class="search-actions">
-                                <button type="submit" class="search-btn" id="searchBtn">
-                                    <i class="fas fa-search search-btn-icon"></i>
-                                    <span>Find Rooms</span>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </section>
-            </div>
-            
-            <div class="right-column">
-                <div id="results-container">
-                    {% if free_rooms %}
-                    <section class="module results-module">
-                        <div class="module-header results-header">
-                            <div class="header-left">
-                                <i class="fas fa-check-circle results-icon"></i>
-                                <h2 class="module-title">Available Rooms</h2>
-                            </div>
-                            <div class="results-count">{{ free_rooms|length }} found</div>
+
+        <main class="main-content">
+            <aside class="sidebar">
+                <div class="sidebar-inner">
+                    <form method="post" class="search-form card" id="search-form">
+                        {% csrf_token %}
+                        <h2 class="form-title">Find a Room</h2>
+                        <div class="form-group">
+                            <label for="{{ form.building.id_for_label }}">{{ form.building.label }}</label>
+                            {{ form.building }}
                         </div>
-                        <div class="module-content">
-                            <ul class="room-list">
-                                {% for room in free_rooms %}
-                                <li class="room-item">
-                                    <div class="room-icon-wrapper">
-                                        <i class="fas fa-door-open room-icon"></i>
-                                    </div>
-                                    <div class="room-details">
-                                        <span class="room-name">{{ room.name }}</span>
-                                        <span class="room-building">{{ room.building }}</span>
-                                    </div>
-                                    <div class="room-tags">
-                                        <span class="room-tag tag-available">Available</span>
-                                    </div>
-                                </li>
-                                {% endfor %}
-                            </ul>
+                        <div class="form-group">
+                            <label for="{{ form.day.id_for_label }}">{{ form.day.label }}</label>
+                            {{ form.day }}
                         </div>
-                    </section>
-                    {% elif errors %}
-                    <section class="module error-module">
-                        <div class="module-header">
-                            <i class="fas fa-exclamation-circle module-icon"></i>
-                            <h2 class="module-title">Search Error</h2>
+                        <div class="form-divider"></div>
+                        <div class="form-group">
+                            <label for="{{ form.time.id_for_label }}">{{ form.time.label }}</label>
+                            {{ form.time }}
                         </div>
-                        <div class="module-content">
-                            {% for error in errors %}
-                            <div class="error">{{ error }}</div>
-                            {% endfor %}
+                        <div class="form-group">
+                            <label for="{{ form.duration.id_for_label }}">{{ form.duration.label }}</label>
+                            {{ form.duration }}
                         </div>
-                    </section>
-                    {% else %}
-                    <section class="module">
-                        <div class="empty-state">
-                            <div class="empty-icon">
+                        <div class="search-actions">
+                            <button type="submit" class="search-btn" id="searchBtn">
                                 <i class="fas fa-search"></i>
-                            </div>
-                            <h3 class="empty-title">Find Your Perfect Study Spot</h3>
-                            <p class="empty-text">Use the form to search for available rooms.</p>
+                                <span>Search</span>
+                            </button>
                         </div>
-                    </section>
+                    </form>
+                </div>
+            </aside>
+
+            <section class="results-section">
+                <div id="results-container">
+                    {% if available_rooms or unavailable_rooms %}
+                        {% include 'finder/timeline_partial.html' %}
+                    {% else %}
+                        <div class="card empty-state">
+                            <i class="fas fa-calendar-alt empty-icon"></i>
+                            <h3 class="empty-title">Welcome to Campuspal</h3>
+                            <p class="empty-text">Select a building and day to see the room schedule.</p>
+                        </div>
                     {% endif %}
                 </div>
-            </div>
+            </section>
         </main>
-        
-        <footer class="footer">
-            <div class="footer-content">
-                <span>&copy; {% now "Y" %} Campuspal. All rights reserved.</span>
-            </div>
-        </footer>
     </div>
-    
-    <div class="toast" id="toast"></div>
+
+    <!-- Room Details Modal -->
+    <div id="room-modal" class="modal">
+        <div class="modal-content card">
+            <button class="close-button">&times;</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
     <script src="{% static 'finder/js/scripts.js' %}"></script>
 </body>
 </html>

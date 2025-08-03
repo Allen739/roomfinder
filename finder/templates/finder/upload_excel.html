@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Data - Campuspal</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'finder/css/styles.css' %}">
 </head>
@@ -13,76 +14,63 @@
     <div class="app-container">
         <header class="header">
             <div class="header-logo">
-                <div class="logo-icon">
-                    <i class="fas fa-door-open"></i>
-                </div>
+                <i class="fas fa-door-open logo-icon"></i>
                 <h1 class="header-title">Campuspal</h1>
             </div>
             <nav class="header-nav">
-                <a href="{% url 'finder:search_rooms' %}" class="nav-link header-nav-link">
+                <a href="{% url 'finder:search_rooms' %}" class="nav-link">
                     <i class="fas fa-search"></i>
                     <span>Find a Room</span>
                 </a>
             </nav>
         </header>
 
-        <main class="content" style="grid-template-columns: 1fr;">
-            <div class="upload-container">
-                <section class="module">
-                    <div class="module-header">
-                        <i class="fas fa-file-excel module-icon"></i>
-                        <h2 class="module-title">Upload Timetable Data</h2>
-                    </div>
-                    <div class="module-content">
-                        {% if messages %}
-                            <div class="messages">
-                                {% for message in messages %}
-                                    <div class="{% if message.tags == 'success' %}success-message{% else %}error-message{% endif %}">
-                                        <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-circle{% endif %} message-icon"></i>
-                                        <span>{{ message }}</span>
-                                    </div>
-                                {% endfor %}
+        <main class="main-content upload-page">
+            <div class="upload-container card">
+                <h2 class="form-title">Upload Timetable Data</h2>
+                
+                {% if messages %}
+                    <div class="messages-container">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">
+                                <i class="fas fa-info-circle"></i> {{ message }}
                             </div>
-                        {% endif %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
 
-                        <form method="post" enctype="multipart/form-data" id="upload-form" class="upload-form">
-                            {% csrf_token %}
-                            {% for field in form %}
-                            <div class="form-group">
-                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                                <div class="file-input-container">
-                                    <label class="file-input-label" for="{{ field.id_for_label }}">
-                                        <i class="fas fa-upload"></i>
-                                        <span>Choose file...</span>
-                                        {{ field }}
-                                    </label>
-                                    <div class="file-name" id="file-name-display-{{ field.id_for_label }}">No file selected.</div>
-                                </div>
-                                {% if field.errors %}
-                                <div class="error">{{ field.errors|join:", " }}</div>
-                                {% endif %}
-                            </div>
-                            {% endfor %}
-                            <div class="upload-actions">
-                                <button type="submit" id="submit-button" class="search-btn">
-                                    <i class="fas fa-cloud-upload-alt"></i>
-                                    <span>Upload Files</span>
-                                </button>
-                            </div>
-                        </form>
+                <form method="post" enctype="multipart/form-data" id="upload-form">
+                    {% csrf_token %}
+                    
+                    <div class="upload-drop-zone" id="rooms-drop-zone">
+                        <input type="file" name="rooms_file" id="id_rooms_file" accept=".xlsx,.xls" hidden>
+                        <label for="id_rooms_file" class="drop-zone-label">
+                            <i class="fas fa-file-excel upload-icon"></i>
+                            <p>Drag & drop your <strong>Rooms Excel File</strong> here, or click to browse.</p>
+                            <span class="file-name" id="rooms-file-name">No file selected</span>
+                        </label>
                     </div>
-                </section>
+
+                    <div class="upload-drop-zone" id="timetable-drop-zone">
+                        <input type="file" name="timetable_file" id="id_timetable_file" accept=".xlsx,.xls" hidden>
+                        <label for="id_timetable_file" class="drop-zone-label">
+                            <i class="fas fa-calendar-alt upload-icon"></i>
+                            <p>Drag & drop your <strong>Timetable Excel File</strong> here, or click to browse.</p>
+                            <span class="file-name" id="timetable-file-name">No file selected</span>
+                        </label>
+                    </div>
+
+                    <div class="search-actions">
+                        <button type="submit" id="submit-button" class="search-btn">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>Upload Files</span>
+                        </button>
+                    </div>
+                </form>
             </div>
         </main>
-
-        <footer class="footer">
-            <div class="footer-content">
-                <span>&copy; {% now "Y" %} Campuspal. All rights reserved.</span>
-            </div>
-        </footer>
     </div>
 
-    <div class="toast" id="toast"></div>
     <script src="{% static 'finder/js/scripts.js' %}"></script>
 </body>
 </html>

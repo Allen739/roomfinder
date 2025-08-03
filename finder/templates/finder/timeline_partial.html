@@ -1,0 +1,36 @@
+<div class="card">
+    <div class="results-tabs">
+        <button class="tab-link active" data-tab="available">Available ({{ available_rooms|length }})</button>
+        <button class="tab-link" data-tab="unavailable">Unavailable ({{ unavailable_rooms|length }})</button>
+    </div>
+
+    <div class="timeline-header">
+        <span class="time-marker">7 AM</span>
+        <span class="time-marker">9 AM</span>
+        <span class="time-marker">11 AM</span>
+        <span class="time-marker">1 PM</span>
+        <span class="time-marker">3 PM</span>
+        <span class="time-marker">5 PM</span>
+        <span class="time-marker">7 PM</span>
+        <span class="time-marker">9 PM</span>
+        <span class="time-marker">11 PM</span>
+    </div>
+
+    <div id="available" class="tab-content active">
+        {% for item in available_rooms %}
+            {% include 'finder/timeline_row.html' with room_item=item %}
+        {% empty %}
+            {% if search_performed %}
+                <p class="no-results-text">No rooms are available for the selected time.</p>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    <div id="unavailable" class="tab-content">
+        {% for item in unavailable_rooms %}
+            {% include 'finder/timeline_row.html' with room_item=item %}
+        {% empty %}
+             <p class="no-results-text">No other rooms to show.</p>
+        {% endfor %}
+    </div>
+</div>

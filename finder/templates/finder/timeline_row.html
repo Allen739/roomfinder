@@ -1,0 +1,14 @@
+<div class="timeline-row" data-room-id="{{ room_item.room.id }}">
+    <div class="room-info">
+        <div class="room-name">{{ room_item.room.name }}</div>
+        <div class="room-capacity">{{ room_item.room.capacity }} seats</div>
+    </div>
+    <div class="timeline">
+        {% for block in room_item.timeline %}
+            <div class="timeline-block {{ block.type }}" 
+                 style="left: {{ block.start_percentage }}%; width: {{ block.width_percentage }}%;"
+                 title="{{ block.start_str }} - {{ block.end_str }}{% if block.course %}: {{ block.course }}{% endif %}">
+            </div>
+        {% endfor %}
+    </div>
+</div>

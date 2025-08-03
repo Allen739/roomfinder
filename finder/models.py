@@ -4,8 +4,11 @@ from django.db import models
 
 
 class Room(models.Model):
-    name = models.CharField(max_length=100, unique=True)  # e.g., "A101"
+    name = models.CharField(max_length=100)  # e.g., "A101"
     building = models.CharField(max_length=100)  # e.g., "A"
+    capacity = models.PositiveIntegerField(default=0)
+    amenities = models.JSONField(default=list)  # e.g., ["Projector", "Whiteboard"]
+    photo_url = models.URLField(blank=True, null=True)
 
     class Meta:
         verbose_name = "Room"

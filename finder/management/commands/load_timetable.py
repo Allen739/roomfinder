@@ -14,7 +14,7 @@ class Command(BaseCommand):
 
         # Read Excel file
         try:
-            df = pd.read_excel("timetable.xlsx")
+            df = pd.read_excel("sample_data/timetable.xlsx")
         except FileNotFoundError:
             self.stdout.write(self.style.ERROR(
                 "timetable.xlsx not found in project root."))
