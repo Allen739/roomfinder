@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('room-modal');
     const modalBody = document.getElementById('modal-body');
     const closeModal = document.querySelector('.close-button');
+    const themeToggle = document.getElementById('theme-toggle');
 
     // Search Form Submission (AJAX)
     if (searchForm) {
@@ -88,6 +89,35 @@ document.addEventListener('DOMContentLoaded', function() {
             resultsContainer.querySelector(`#${tabId}`).classList.add('active');
         }
     });
+
+    // Theme toggling with persistence
+    function applyTheme(theme) {
+        if (theme === 'dark') {
+            document.documentElement.classList.add('theme-dark');
+        } else {
+            document.documentElement.classList.remove('theme-dark');
+        }
+        const icon = themeToggle && themeToggle.querySelector('i');
+        if (icon) {
+            icon.classList.toggle('fa-moon', theme !== 'dark');
+            icon.classList.toggle('fa-sun', theme === 'dark');
+        }
+    }
+
+    // Initialize theme
+    const storedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const initialTheme = storedTheme || (prefersDark ? 'dark' : 'light');
+    applyTheme(initialTheme);
+
+    if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+            const current = document.documentElement.classList.contains('theme-dark') ? 'dark' : 'light';
+            const next = current === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('theme', next);
+            applyTheme(next);
+        });
+    }
 
     // Upload Page Functionality (Drag & Drop)
     const roomsDropZone = document.getElementById('rooms-drop-zone');
